@@ -28,6 +28,7 @@ class BFscraper(scrapy.Spider):
         subhed = response.css('.news-article-header__dek').xpath('.//text()').get()
         byline = response.css('span.news-byline-full__name').xpath('.//text()').get()
         pub_date = response.css('p.news-article-header__timestamps-posted').xpath('.//text()').get()
+        section = response.css('#js-post-container > div > div.grid-layout-main.xs-mb2.lg-mb0 > header > nav > ol > li > a').xpath('.//text()').get()
 
         text_body = ' '.join(response.css('div.js-article-wrapper').xpath('.//text()').extract())
         tags = ''.join(response.css('span.tags-list').xpath('.//text()').extract()[1:-1]).replace('#','')
@@ -36,6 +37,7 @@ class BFscraper(scrapy.Spider):
             'link': link,
             'hed': hed,
             'subhed': subhed,
+            'section': section,
             'byline':byline,
             'pub_date':pub_date,
             'text_body':text_body
