@@ -1,0 +1,40 @@
+---
+title: "Time series analysis"
+author: "Nick Hagar"
+date: "1/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reorganizing data
+
+For the aggregate time series analysis, we want a dataframe that's sorted by day, with an indicator for day of week, that tracks stories published per day.
+
+```{r libraries}
+library(tidyverse)
+library(lubridate)
+```
+
+```{r loaddata}
+df <- read_csv('../data/scraped_stories_sections.csv')
+
+df <- df %>% separate(pub_date, c('f', 'l'), sep='Posted on ') %>% separate(l, c('datel', 'l2'), sep=', at') %>% 
+  filter(!is.na(datel)) %>% mutate(pub_date=mdy(datel)) %>% select(-f, -l2, -datel)
+
+df_meta <- df %>% select(-text_body)
+```
+
+```{r aggregate}
+df_meta %>% 
+  group_by(pub_date) %>% 
+  summarize(stories=n()) %>% 
+  mutate(day_of_week=wday(pub_date)) %>% 
+  filter(pub_date>as_date('2018-12-31')) %>% 
+  ggplot(aes(pub_date, stories)) + 
+  geom_line()
+
+```
+
