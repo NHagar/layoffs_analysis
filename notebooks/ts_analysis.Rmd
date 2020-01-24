@@ -16,6 +16,9 @@ For the aggregate time series analysis, we want a dataframe that's sorted by day
 ```{r libraries}
 library(tidyverse)
 library(lubridate)
+library(anomalize)
+library(CausalImpact)
+library(fastDummies)
 ```
 
 ```{r loaddata}
@@ -27,14 +30,43 @@ df <- df %>% separate(pub_date, c('f', 'l'), sep='Posted on ') %>% separate(l, c
 df_meta <- df %>% select(-text_body)
 ```
 
+## Modeling time series
 ```{r aggregate}
-df_meta %>% 
+df_meta_agg <- df_meta %>% 
   group_by(pub_date) %>% 
   summarize(stories=n()) %>% 
   mutate(day_of_week=wday(pub_date)) %>% 
-  filter(pub_date>as_date('2018-12-31')) %>% 
-  ggplot(aes(pub_date, stories)) + 
-  geom_line()
+  filter(pub_date>as_date('2018-12-31'))
 
+```
+
+```{r decompose}
+df_meta_agg %>% 
+  time_decompose(stories) %>% 
+  anomalize(remainder) %>% 
+  plot_anomaly_decomposition()
+```
+
+```{r regress}
+model <- df_meta_agg %>% 
+  mutate(intervention=ifelse(pub_date<date('2019-01-25'), 0, 1)) %>%
+  dummy_cols(select_columns = 'day_of_week', remove_selected_columns = T) %>% 
+  lm(stories ~ day_of_week_1 + day_of_week_2 + day_of_week_3 + day_of_week_4 + day_of_week_5 + day_of_week_6 + day_of_week_7 + intervention, data=.)
+
+summary(model)
+
+plot(model)
+```
+
+```{r forecast}
+est <- df_meta_agg %>% 
+  mutate(intervention=ifelse(pub_date<date('2019-01-25'), 0, 1)) %>%
+  dplyr::select(stories, intervention, day_of_week) %>% 
+  rename('y'=stories, 'x1'=intervention, 'x2'=day_of_week) %>%
+  as.matrix(.) %>% 
+  CausalImpact(., pre.period = c(1,23),
+               post.period = c(24,36))
+
+plot(est)
 ```
 
