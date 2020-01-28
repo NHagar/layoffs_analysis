@@ -47,4 +47,10 @@ summary(model)
 detrend_ts(ts_weekly)
 ```
 
+## Section-level time series analysis
+
+
+```{r}
+
+```
 
