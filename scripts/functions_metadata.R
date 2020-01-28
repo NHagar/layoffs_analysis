@@ -1,6 +1,7 @@
 #--
 #Functions to handle additional metadata
 #--
+library(tidyverse)
 
 #Load the list of cleaned layoff names
 load_layoffs <- function() {

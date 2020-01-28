@@ -1,6 +1,10 @@
 #--
 #Functions to conduct time series analysis/preprocessing
 #--
+library(tidyverse)
+library(forecast)
+library(lubridate)
+library(fastDummies)
 
 #Aggregate time series
 agg_df <- function(df, start, end) {
@@ -27,7 +31,9 @@ convert_ts <- function(df) {
 decomp_plots <- function(timeseries) {
   timeseries %>% 
     decompose(.) %>% 
-    plot(.) %>% 
+    plot(.)
+  
+  timeseries %>% 
     acf(.)
 }
 

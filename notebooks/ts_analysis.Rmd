@@ -1,0 +1,50 @@
+---
+title: "Time series analysis"
+author: "Nick Hagar"
+date: "1/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+source('../scripts/functions_ts.R')
+source('../scripts/functions_metadata.R')
+```
+
+
+## Loading and aggregating data
+
+```{r loaddata}
+df <- read_csv('../data/scraped_stories_sections.csv')
+
+df <- df %>% separate(pub_date, c("f", "l"), sep="Posted on ") %>% 
+  separate(l, c("datel", "l2"), sep=", at") %>% 
+  filter(!is.na(datel)) %>% 
+  mutate(pub_date=mdy(datel)) %>% 
+  select(-f, -l2, -datel)
+
+df_meta <- df %>% select(-text_body)
+
+df_meta_agg <- agg_df(df_meta, '2019-01-05', '2019-02-07')
+ts_weekly <- convert_ts(df_meta_agg)
+```
+
+## Aggregate time series analysis
+```{r decomposition}
+decomp_plots(ts_weekly)
+```
+
+```{r modeling}
+model <- lm_df(df_meta_agg, '2019-01-25')
+summary(model)
+```
+
+```{r detrend}
+detrend_ts(ts_weekly)
+```
+
+
