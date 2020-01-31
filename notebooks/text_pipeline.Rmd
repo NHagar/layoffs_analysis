@@ -1,0 +1,56 @@
+---
+title: "Text pipeline"
+author: "Nick Hagar"
+date: "1/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(tidytext)
+```
+
+```{r}
+df <- read_csv('../data/scraped_stories_sections.csv')
+```
+
+## Text cleaning
+```{r}
+text_clean <- function(s) {
+  clean_string <- s %>% 
+    gsub("\\{.*?\\}", "", .) %>% 
+    gsub("\\s+"," ", .) %>% 
+    gsub('".*?\\}', "", .) %>% 
+    gsub('^ ,.*?\\}', "", .)
+  
+  return(clean_string)
+}
+
+df <- df %>% mutate(text_body=text_clean(text_body))
+```
+
+## Length
+```{r}
+df <- df %>% 
+  mutate(len_chars = str_length(text_body),
+         len_words = str_count(text_body, "\\w+"))
+```
+
+## Sentiment scoring
+```{r}
+sentiment <- get_sentiments("bing")
+
+df_sent <- df %>% 
+  unnest_tokens(word, text_body) %>% 
+  inner_join(sentiment) %>% 
+  group_by(link, sentiment) %>% 
+  summarize(words=n()) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from=sentiment, values_from=words) %>% 
+  mutate_all(~replace(., is.na(.), 0))
+```
+
