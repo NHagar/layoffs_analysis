@@ -12,10 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(tidytext)
+library(cleanNLP)
+library(hunspell)
+
+cnlp_init_spacy(model_name="en_core_web_lg")
 ```
 
 ```{r}
-df <- read_csv('../data/scraped_stories_sections.csv')
+df <- read_csv('../data/scraped_stories_sections.csv') %>% distinct()
+
 ```
 
 ## Text cleaning
@@ -52,5 +57,40 @@ df_sent <- df %>%
   ungroup() %>% 
   pivot_wider(names_from=sentiment, values_from=words) %>% 
   mutate_all(~replace(., is.na(.), 0))
+```
+
+## Text tagging
+```{r}
+tagged_text <- df %>% 
+  rename("doc_id"=link, "text"=text_body) %>% 
+  select(doc_id, text) %>% 
+  cnlp_annotate()
+
+tagged_text$token %>% write_csv('../data/tagged_text_tokens.csv')
+tagged_text$entity %>% write_csv('../data/tagged_text_entities.csv')
+```
+
+## Tag filtering
+To remove: PUNCT, SPACE, PROPN, SYM, NUM, X
+```{r}
+bad_tokens <- c('PUNCT', 'SPACE', 'PROPN', 'SYM', 'NUM', 'X')
+
+filtered_tokens <- tagged_text$token %>% 
+  filter(!upos %in% bad_tokens)
+```
+
+## Misspellings
+```{r}
+is_error <- function(token) {
+  spell <- hunspell(token)
+  error <- length(spell[[1]])
+  return(error)
+}
+
+tokens_spelling <- filtered_tokens %>% 
+  mutate(misspelled = is_error(token))
+
+tokens_spelling %>% 
+  filter(misspelled>0)
 ```
 
