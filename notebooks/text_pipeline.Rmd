@@ -39,6 +39,19 @@ text_clean <- function(s) {
 df <- df %>% mutate(text_body=text_clean(text_body))
 ```
 
+## Length - spacy
+```{r}
+df_tokens <- read_csv('../data/tagged_text_tokens.csv')
+
+df_tokens %>% filter(upos!="X" & upos!="SYM" & upos!="SPACE") %>% 
+  mutate(token_len=str_length(token)) %>% 
+  group_by(doc_id) %>% 
+  summarize(tokens=n(), characters=sum(token_len, na.rm=T))
+
+df_tokens %>% filter(doc_id=="https://www.buzzfeednews.com/article/claudiarosenbaum/kesha-drops-sex-assault-case-against-dr-luke")
+```
+
+
 ## Length
 ```{r}
 df <- df %>% 
