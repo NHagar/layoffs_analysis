@@ -14,6 +14,7 @@ library(tidyverse)
 library(tidytext)
 library(cleanNLP)
 library(hunspell)
+library(mallet)
 
 cnlp_init_spacy(model_name="en_core_web_lg")
 ```
@@ -92,5 +93,65 @@ tokens_spelling <- filtered_tokens %>%
 
 tokens_spelling %>% 
   filter(misspelled>0)
+```
+
+## Entities
+```{r}
+df_ent <- read_csv('../data/tagged_text_entities.csv')
+
+df_ent %>% 
+  filter(entity_type=='PERSON') %>% 
+  group_by(doc_id) %>% 
+  summarize(people=n())
+```
+
+## Sourcing - quotes and tweets
+```{r}
+df_tokens <- read_csv('../data/tagged_text_tokens.csv')
+
+df_tokens %>% 
+  filter(lemma=='"' | grepl('^@', token)) %>% 
+  mutate(type=ifelse(grepl('^@', token), 'handle', 'quote')) %>% 
+  group_by(doc_id, type) %>% 
+  summarize(count=n()) %>% 
+  mutate(count_halved=ifelse(type=="quote", count/2, count))
+```
+
+## Topics - mallet (stopword list)
+```{r}
+fileConn <- file("stopword.txt")  
+
+file.create(empty_file <- tempfile())
+
+docs <- mallet.import(df$link, df$text_body, empty_file)
+
+mallet_model <- MalletLDA(9)
+mallet_model$loadDocuments(docs)
+
+mallet.word.freqs(mallet_model) %>% 
+  arrange(desc(doc.freq)) %>% 
+  mutate(words=as.character(words)) %>% 
+  top_frac(.01, doc.freq) %>% 
+  pull(words) %>% 
+  writeLines(., con=fileConn)
+
+```
+
+## Topics - mallet (model training)
+```{r}
+docs <- mallet.import(df$link, df$text_body, "stopword.txt")
+
+mallet_model <- MalletLDA(9)
+mallet_model$loadDocuments(docs)
+
+mallet_model$setAlphaOptimization(20, 50)
+
+mallet_model$train(1000)
+```
+
+```{r}
+topic.words <- mallet.topic.words(mallet_model, smoothed=T, normalized=T)
+
+mallet.top.words(mallet_model, topic.words[2,])
 ```
 
