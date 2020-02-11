@@ -3,6 +3,17 @@
 #--
 library(tidyverse)
 
+#Load and clean the data
+load_data <- function() {
+  df <- read_csv('../data/scraped_stories_sections.csv') %>% 
+    distinct() %>% 
+    #get rid of JS junk
+    mutate(text_body=gsub("\\{.*?\\}\n", "", text_body)) %>% 
+    #Get rid of extra whitespace/newlines
+    mutate(text_body=gsub("\\s+"," ", text_body))
+  return(df)
+}
+
 #Load the list of cleaned layoff names
 load_layoffs <- function() {
   layoffs <- read_csv('../data/layoffs_lists_joined.csv') %>% 
