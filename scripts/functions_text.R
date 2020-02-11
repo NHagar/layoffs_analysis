@@ -56,7 +56,8 @@ text_sent <- function(df) {
     summarize(words=n()) %>% 
     ungroup() %>% 
     pivot_wider(names_from=sentiment, values_from=words) %>% 
-    mutate_all(~replace(., is.na(.), 0))
+    mutate_all(~replace(., is.na(.), 0)) %>% 
+    left_join(df)
   return(df_sent)
 }
 

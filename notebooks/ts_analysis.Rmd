@@ -23,13 +23,60 @@ df <- load_data()
 
 df_agg <- agg_df(df, '2019-01-05', '2019-02-07')
 
-ts_weekly <- convert_ts(df_meta_agg)
+ts_weekly <- convert_ts(df_agg)
 ```
+
+## Text features
+```{r textprocessing}
+df <- df %>% 
+  #Count social embeds
+  text_embeds(.) %>% 
+  #Remove social embeds
+  mutate(text_body=text_clean(text_body)) %>% 
+  #Calculate length
+  text_lengths(.) %>% 
+  #Tag with sentiment
+  text_sent(.)
+
+#TODO: Tag NLP
+df
+
+#Transform measures
+df <- df %>% 
+  select(-text_body, -hed, -subhed) %>% 
+  mutate(neg_pct=negative/len_words,
+         pos_pct=positive/len_words,
+         log_len_chars=log1p(len_chars),
+         log_len_words=log1p(len_words),
+         has_tweet=tweets>0,
+         has_insta=insta>0)
+
+#Aggregate all measures to the daily level
+df %>% 
+  group_by(pub_date) %>% 
+  summarize(stories=n(), bylines=n_distinct(byline),
+            log_len_chars=mean(log_len_chars), log_len_words=mean(log_len_words),
+            neg_pct=mean(neg_pct), pos_pct=mean(pos_pct),
+            pct_tweet=sum(has_tweet)/n(),
+            pct_insta=sum(has_insta)/n()) %>% 
+  mutate(day_of_week=wday(pub_date))
+```
+
 
 ## Aggregate time series analysis
 ```{r decomposition}
 decomp_plots(ts_weekly)
 ```
+
+```{r}
+decomposed <- decompose(ts_weekly)
+
+deseasoned <- decomposed$x - decomposed$seasonal
+plot(deseasoned)
+
+df_agg$deseasoned <- deseasoned
+```
+
 
 ```{r modeling}
 model <- lm_df(df_meta_agg, '2019-01-25')
@@ -52,11 +99,11 @@ df_agg <- df_agg %>%
 
 rdrobust(df_agg$stories, df_agg$relative_days, covs = df_agg$day_of_week)
 
-est <- RDestimate(stories ~ relative_days, data=df_agg, cutpoint = 0)
+est <- RDestimate(deseasoned ~ relative_days, data=df_agg, cutpoint = 0)
 
 est_cov <- RDestimate(stories ~ relative_days | day_of_week, data=df_agg, cutpoint = 0)
 
-plot(est)
+summary(est)
 
 plot(est_cov)
 
