@@ -10,7 +10,12 @@ load_data <- function() {
     #get rid of JS junk
     mutate(text_body=gsub("\\{.*?\\}\n", "", text_body)) %>% 
     #Get rid of extra whitespace/newlines
-    mutate(text_body=gsub("\\s+"," ", text_body))
+    mutate(text_body=gsub("\\s+"," ", text_body)) %>% 
+    separate(pub_date, c("f", "l"), sep="Posted on ") %>% 
+    separate(l, c("datel", "l2"), sep=", at") %>% 
+    filter(!is.na(datel)) %>% 
+    mutate(pub_date=mdy(datel)) %>% 
+    select(-f, -l2, -datel)
   return(df)
 }
 

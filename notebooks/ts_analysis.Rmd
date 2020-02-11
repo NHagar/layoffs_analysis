@@ -13,23 +13,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 source('../scripts/functions_ts.R')
 source('../scripts/functions_metadata.R')
+source('../scripts/functions_text.R')
 ```
 
 
 ## Loading and aggregating data
-
 ```{r loaddata}
-df <- read_csv('../data/scraped_stories_sections.csv')
+df <- load_data()
 
-df <- df %>% separate(pub_date, c("f", "l"), sep="Posted on ") %>% 
-  separate(l, c("datel", "l2"), sep=", at") %>% 
-  filter(!is.na(datel)) %>% 
-  mutate(pub_date=mdy(datel)) %>% 
-  select(-f, -l2, -datel)
+df_agg <- agg_df(df, '2019-01-05', '2019-02-07')
 
-df_meta <- df %>% select(-text_body)
-
-df_meta_agg <- agg_df(df_meta, '2019-01-05', '2019-02-07')
 ts_weekly <- convert_ts(df_meta_agg)
 ```
 
@@ -47,10 +40,29 @@ summary(model)
 detrend_ts(ts_weekly)
 ```
 
-## Section-level time series analysis
-
-
+## Regression discontinuity analysis
 ```{r}
+library(rdrobust)
+library(rdd)
 
+df_agg <- df_agg %>% 
+  ungroup() %>% 
+  mutate(relative_days=as.integer(pub_date-as_date("2019-01-25"))) %>% 
+  filter(relative_days>=-12)
+
+rdrobust(df_agg$stories, df_agg$relative_days, covs = df_agg$day_of_week)
+
+est <- RDestimate(stories ~ relative_days, data=df_agg, cutpoint = 0)
+
+est_cov <- RDestimate(stories ~ relative_days | day_of_week, data=df_agg, cutpoint = 0)
+
+plot(est)
+
+plot(est_cov)
+
+df_agg %>% 
+  RDestimate(stories ~ relative_days)
+
+df_agg
 ```
 
