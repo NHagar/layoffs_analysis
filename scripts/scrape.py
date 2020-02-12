@@ -2,11 +2,7 @@ import pandas as pd
 import scrapy
 
 df = pd.read_csv('../data/ARCHIVE_761days_cleaned.csv')
-scraped1 = pd.read_csv('../data/scraped_stories_761days.csv')
-scraped = pd.read_csv('../data/scraped_stories_761days-run2.csv')
-scraped_links = scraped.link.tolist() + scraped1.link.tolist()
-
-links = [i for i in df.url_cleaned.tolist() if i not in scraped_links]
+links = [i for i in df.url_cleaned.tolist()]
 
 class BFscraper(scrapy.Spider):
     name = 'buzzfeed'

@@ -1,0 +1,61 @@
+---
+title: "results"
+author: "Nick Hagar"
+date: "2/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(drake)
+```
+
+## Story count changes
+14 days:
+```{r}
+loadd(data_noseason_stories_data_agg_14)
+plot(readd(rdd_model_data_noseason_stories_data_agg_14))
+```
+
+28 days:
+```{r}
+loadd(data_noseason_stories_data_agg_28)
+plot(readd(rdd_model_data_noseason_stories_data_agg_28))
+```
+
+42 days:
+```{r}
+loadd(data_noseason_stories_data_agg_42)
+plot(readd(rdd_model_data_noseason_stories_data_agg_42))
+```
+
+168 days:
+```{r}
+loadd(data_noseason_stories_data_agg_168)
+plot(readd(rdd_model_data_noseason_stories_data_agg_168))
+```
+
+## Byline count changes
+14 days:
+```{r}
+loadd(data_noseason_bylines_data_agg_14)
+plot(readd(rdd_model_data_noseason_bylines_data_agg_14))
+```
+
+28 days:
+```{r}
+loadd(data_noseason_bylines_data_agg_28)
+plot(readd(rdd_model_data_noseason_bylines_data_agg_28))
+```
+
+42 days:
+```{r}
+loadd(data_noseason_bylines_data_agg_42)
+plot(readd(rdd_model_data_noseason_bylines_data_agg_42))
+```
+
+168 days:
+```{r}
+loadd(data_noseason_bylines_data_agg_168)
+plot(readd(rdd_model_data_noseason_bylines_data_agg_168))
+```
