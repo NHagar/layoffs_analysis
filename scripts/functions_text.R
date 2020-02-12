@@ -12,11 +12,17 @@ library(mallet)
 sentiment <- get_sentiments("bing")
 cnlp_init_spacy(model_name="en_core_web_lg")
 
-#Count social embeds
+#Social embed-related text cleaning
 text_embeds <- function(df) {
   df_social <- df %>% 
+    #Count social embeds
     mutate(tweets=str_count(text_body, pattern="\\}.*? Retweet Favorite"), 
-           insta=str_count(text_body, pattern="Instagram: @[A-z]* "))
+           insta=str_count(text_body, pattern="Instagram: @[A-z]* "),
+           #Remove social embeds
+           text_body=text_clean(text_body),
+           #Get text length
+           len_chars = str_length(text_body),
+           len_words = str_count(text_body, "\\w+"))
   return(df_social)
 }
 
@@ -34,14 +40,6 @@ text_clean <- function(s) {
     #Get rid of Twitter attributions
     gsub("@[A-z]* // Twitter ", "", .)
   return(clean_string)
-}
-
-#Calculate word and character length
-text_lengths <- function(df) {
-  df_len <- df %>% 
-    mutate(len_chars = str_length(text_body),
-           len_words = str_count(text_body, "\\w+"))
-  return(df_len)
 }
 
 #Tag stories with sentiment words
@@ -73,3 +71,15 @@ text_tag <- function(df, token_path='../data/tagged_text_tokens.csv', ent_path='
   flog.info("Entity dataframe saved to %s", ent_path)
 }
 
+#Mutate measures
+text_measures <- function(df) {
+  df_mutate <- df %>% 
+    mutate(neg_pct=negative/len_words,
+           pos_pct=positive/len_words,
+           polarity=pos_pct-neg_pct,
+           log_len_chars=log1p(len_chars),
+           log_len_words=log1p(len_words),
+           has_tweet=tweets>0,
+           has_insta=insta>0)
+  return(df_mutate)
+}

@@ -128,3 +128,5 @@ dmypy.json
 .Rhistory
 *.Rproj
 .Rproj.user/
+
+~$slides_lab-meeting.pptx

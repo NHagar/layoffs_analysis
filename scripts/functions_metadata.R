@@ -4,8 +4,8 @@
 library(tidyverse)
 
 #Load and clean the data
-load_data <- function() {
-  df <- read_csv('../data/scraped_stories_sections.csv') %>% 
+clean_data <- function(df) {
+  df_clean <- df %>% 
     distinct() %>% 
     #get rid of JS junk
     mutate(text_body=gsub("\\{.*?\\}\n", "", text_body)) %>% 
@@ -16,7 +16,7 @@ load_data <- function() {
     filter(!is.na(datel)) %>% 
     mutate(pub_date=mdy(datel)) %>% 
     select(-f, -l2, -datel)
-  return(df)
+  return(df_clean)
 }
 
 #Load the list of cleaned layoff names
@@ -51,3 +51,16 @@ layoff_percent <- function(df) {
   return(df_layoff)
 }
 
+#Aggregate measures around a cutoff point
+agg_measures <- function(df, cutoff, days) {
+  df_agg = df %>% 
+    group_by(pub_date) %>% 
+    summarize(stories=n(), bylines=n_distinct(byline),
+              log_len_chars=mean(log_len_chars), log_len_words=mean(log_len_words),
+              polarity=mean(polarity),
+              pct_tweet=sum(has_tweet)/n(),
+              pct_insta=sum(has_insta)/n()) %>% 
+    mutate(day_of_week=wday(pub_date)) %>% 
+    filter(pub_date>(cutoff-days) & pub_date<(cutoff+days))
+  return(df_agg)
+}

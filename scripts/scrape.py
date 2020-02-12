@@ -2,8 +2,11 @@ import pandas as pd
 import scrapy
 
 df = pd.read_csv('../data/ARCHIVE_761days_cleaned.csv')
+scraped1 = pd.read_csv('../data/scraped_stories_761days.csv')
+scraped = pd.read_csv('../data/scraped_stories_761days-run2.csv')
+scraped_links = scraped.link.tolist() + scraped1.link.tolist()
 
-links = df.url_cleaned.tolist()
+links = [i for i in df.url_cleaned.tolist() if i not in scraped_links]
 
 class BFscraper(scrapy.Spider):
     name = 'buzzfeed'
@@ -12,7 +15,8 @@ class BFscraper(scrapy.Spider):
         'AUTOTHROTTLE_ENABLED' : True, #make sure set to True for big crawls
         'HTTPCACHE_ENABLED' : True,
         'ROBOTSTXT_OBEY' : True,
-        'LOG_LEVEL' : 'INFO'
+        'LOG_LEVEL' : 'INFO',
+        'DEPTH_LIMIT': 1
         # available levels: CRITICAL, ERROR, WARNING, INFO, DEBUG
     }
 

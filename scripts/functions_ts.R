@@ -6,21 +6,10 @@ library(forecast)
 library(lubridate)
 library(fastDummies)
 
-#Aggregate time series
-agg_df <- function(df, start, end) {
-  df_meta_agg <- df %>% 
-    group_by(pub_date) %>% 
-    summarize(stories=n()) %>% 
-    mutate(day_of_week=wday(pub_date)) %>% 
-    filter((pub_date>as_date(start)) & (pub_date<as_date(end)))
-  
-  return(df_meta_agg)
-}
-
 #Convert the dataframe to a time series object with a weekly frequency
-convert_ts <- function(df) {
+convert_ts <- function(df, outcome) {
   weekly_ts <- df %>% 
-    select(stories) %>% 
+    select(outcome) %>% 
     pull() %>% 
     ts(., frequency = 7)
   
