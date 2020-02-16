@@ -10,52 +10,72 @@ knitr::opts_chunk$set(echo = TRUE)
 library(drake)
 ```
 
-## Story count changes
-14 days:
+## Story count changes (overall)
 ```{r}
-loadd(data_noseason_stories_data_agg_14)
-plot(readd(rdd_model_data_noseason_stories_data_agg_14))
+loadd(data_noseason_stories)
+loadd(rdd_model_data_noseason_stories)
+plot(rdd_model_data_noseason_stories)
+summary(rdd_model_data_noseason_stories)
 ```
 
-28 days:
+## Byline count changes (overall)
 ```{r}
-loadd(data_noseason_stories_data_agg_28)
-plot(readd(rdd_model_data_noseason_stories_data_agg_28))
+loadd(data_noseason_bylines)
+loadd(rdd_model_data_noseason_bylines)
+plot(rdd_model_data_noseason_bylines)
+summary(rdd_model_data_noseason_bylines)
 ```
 
-42 days:
+## Storyper count changes (cohort)
 ```{r}
-loadd(data_noseason_stories_data_agg_42)
-plot(readd(rdd_model_data_noseason_stories_data_agg_42))
+loadd(cohort_agg_storiesper)
+loadd(cohort_rdd_cohort_agg_storiesper)
+#plot(cohort_rdd_cohort_agg_storiesper)
+summary(cohort_rdd_cohort_agg_storiesper)
 ```
 
-168 days:
+## Tweet embed changes (cohort)
 ```{r}
-loadd(data_noseason_stories_data_agg_168)
-plot(readd(rdd_model_data_noseason_stories_data_agg_168))
+loadd(cohort_agg_pct_tweet)
+loadd(cohort_rdd_cohort_agg_pct_tweet)
+#plot(cohort_rdd_cohort_agg_pct_tweet)
+summary(cohort_rdd_cohort_agg_pct_tweet)
 ```
 
-## Byline count changes
-14 days:
+## Polarity changes (cohort)
 ```{r}
-loadd(data_noseason_bylines_data_agg_14)
-plot(readd(rdd_model_data_noseason_bylines_data_agg_14))
+loadd(cohort_agg_polarity)
+loadd(cohort_rdd_cohort_agg_polarity)
+#plot(cohort_rdd_cohort_agg_polarity)
+summary(cohort_rdd_cohort_agg_polarity)
 ```
 
-28 days:
+## Insta embed changes (cohort)
 ```{r}
-loadd(data_noseason_bylines_data_agg_28)
-plot(readd(rdd_model_data_noseason_bylines_data_agg_28))
+loadd(cohort_agg_pct_insta)
+loadd(cohort_rdd_cohort_agg_pct_insta)
+#plot(cohort_rdd_cohort_agg_pct_insta)
+summary(cohort_rdd_cohort_agg_pct_insta)
 ```
 
-42 days:
+## Char count changes (cohort)
 ```{r}
-loadd(data_noseason_bylines_data_agg_42)
-plot(readd(rdd_model_data_noseason_bylines_data_agg_42))
+loadd(cohort_agg_log_len_chars)
+loadd(cohort_rdd_cohort_agg_log_len_chars)
+#plot(cohort_rdd_cohort_agg_log_len_chars)
+summary(cohort_rdd_cohort_agg_log_len_chars)
 ```
 
-168 days:
+## Word count changes (cohort)
 ```{r}
-loadd(data_noseason_bylines_data_agg_168)
-plot(readd(rdd_model_data_noseason_bylines_data_agg_168))
+loadd(cohort_agg_log_len_words)
+loadd(cohort_rdd_cohort_agg_log_len_words)
+#plot(cohort_rdd_cohort_agg_log_len_words)
+summary(cohort_rdd_cohort_agg_log_len_words)
 ```
+
+## Section composition
+```{r}
+readd(plot_sections)
+```
+

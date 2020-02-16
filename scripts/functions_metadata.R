@@ -2,6 +2,7 @@
 #Functions to handle additional metadata
 #--
 library(tidyverse)
+library(lubridate)
 
 #Load and clean the data
 clean_data <- function(df) {
@@ -52,15 +53,39 @@ layoff_percent <- function(df) {
 }
 
 #Aggregate measures around a cutoff point
-agg_measures <- function(df, cutoff, days) {
+agg_measures <- function(df, cutoff, days, remove_holidays=F) {
   df_agg = df %>% 
     group_by(pub_date) %>% 
-    summarize(stories=n(), bylines=n_distinct(byline),
+    summarize(stories=n(), bylines=n_distinct(byline), storiesper=stories/bylines,
               log_len_chars=mean(log_len_chars), log_len_words=mean(log_len_words),
-              polarity=mean(polarity),
-              pct_tweet=sum(has_tweet)/n(),
-              pct_insta=sum(has_insta)/n()) %>% 
+              polarity=mean(polarity)*1000,
+              pct_tweet=sum(has_tweet)/n()*100,
+              pct_insta=sum(has_insta)/n()*100) %>% 
     mutate(day_of_week=wday(pub_date)) %>% 
     filter(pub_date>(cutoff-days) & pub_date<(cutoff+days))
+  if (remove_holidays==T) {
+    df_agg <- df_agg %>% 
+      filter(!pub_date %in% c(as_date("12-24-2018"), 
+                              as_date("12-25-2018"),
+                              as_date("12-31-2018"), 
+                              as_date("01-01-2019")))
+  }
   return(df_agg)
 }
+
+#Limit data to surviving cohort
+cohort_build <- function(df, cutoff, window) {
+  laid_off <- read_csv("../data/layoffs_lists_joined.csv") %>% 
+    select(`0`) %>% rename("name"=`0`)
+  df %>% 
+    filter(pub_date>cutoff-window & pub_date<cutoff+window) %>% 
+    group_by(byline) %>% 
+    summarize(first_pub=min(pub_date),
+              last_pub=max(pub_date),
+              stories=n()) %>% 
+    filter(first_pub<cutoff & last_pub>cutoff+9) %>%
+    ungroup() %>% 
+    anti_join(laid_off, by=c("byline"="name")) %>% 
+    left_join(df)
+}
+

@@ -63,3 +63,14 @@ detrend_ts <- function(timeseries) {
     seasadj(.) %>% 
     plot(.)
 }
+
+#Section plot
+section_plot <- function(df) {
+  df %>% 
+    select(-stories) %>% ungroup() %>% 
+    pivot_wider(names_from=prepost, values_from=pct_stories) %>% 
+    replace_na(list(`1`=0)) %>% 
+    mutate(pct_change=`1`/`0`-1) %>% 
+    ggplot(aes(x=`0`, y=section, xend=`1`, yend=section)) + geom_segment(arrow=arrow(length = unit(0.2, "cm"))) + 
+    labs(x="% of stories", y="Section", title="% of stories, before and after layoffs")
+}
