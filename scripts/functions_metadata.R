@@ -7,6 +7,7 @@ library(lubridate)
 #Load and clean the data
 clean_data <- function(df) {
   df_clean <- df %>% 
+    select(-X1) %>% 
     distinct() %>% 
     #get rid of JS junk
     mutate(text_body=gsub("\\{.*?\\}\n", "", text_body)) %>% 

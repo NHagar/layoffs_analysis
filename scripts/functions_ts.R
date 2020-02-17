@@ -72,5 +72,5 @@ section_plot <- function(df) {
     replace_na(list(`1`=0)) %>% 
     mutate(pct_change=`1`/`0`-1) %>% 
     ggplot(aes(x=`0`, y=section, xend=`1`, yend=section)) + geom_segment(arrow=arrow(length = unit(0.2, "cm"))) + 
-    labs(x="% of stories", y="Section", title="% of stories, before and after layoffs")
+    labs(x="% of stories", y="Section", title="Composition pre/post layoffs")
 }

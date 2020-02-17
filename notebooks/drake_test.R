@@ -8,7 +8,7 @@ source("../scripts/functions_text.R")
 
 plan <- drake_plan(
   cutoff = as_date("2019-01-25"),
-  window = 42,
+  window = 43,
   sections = c("politics", "Arts & Entertainment", "world", "tech", "reader", "science", "books",
                "opinion", "health", "national", "lgbt", "investigations", "business"),
   raw_data =  read_csv(file_in('../data/scraped_stories_761days-all.csv')),
@@ -47,3 +47,26 @@ plan <- drake_plan(
 make(plan)
 
 vis_drake_graph(plan)
+
+
+loadd(data)
+
+layoffs <- load_layoffs()
+
+data %>%
+  filter(pub_date>as_date("2019-01-25")-43 & pub_date<as_date("2019-01-25")+43) %>% 
+  group_by(byline) %>% 
+  summarize(stories=n()) %>% 
+  mutate(byline_cleaned =  gsub('[[:punct:] ]+','',tolower(byline))) %>% 
+  filter(byline_cleaned %in% layoffs$byline_cleaned)
+data
+layoffs
+
+loadd(cohort_agg_storiesper)
+
+cohort_agg_storiesper %>% filter(measure<1)
+%>% 
+  group_by(section) %>% 
+  summarize(stories=n()) %>% 
+  arrange(desc(stories)) %>% 
+  mutate(pct=stories/sum(stories))

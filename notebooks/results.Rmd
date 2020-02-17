@@ -8,13 +8,14 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(drake)
+library(tidyverse)
 ```
 
 ## Story count changes (overall)
 ```{r}
 loadd(data_noseason_stories)
 loadd(rdd_model_data_noseason_stories)
-plot(rdd_model_data_noseason_stories)
+plot(rdd_model_data_noseason_stories, xlab="Days before/after layoffs", ylab="Stories published")
 summary(rdd_model_data_noseason_stories)
 ```
 
@@ -76,6 +77,8 @@ summary(cohort_rdd_cohort_agg_log_len_words)
 
 ## Section composition
 ```{r}
-readd(plot_sections)
+loadd(plot_sections)
+plot_sections
+ggsave("C:\\Users\\nrh146\\Dropbox\\Apps\\Overleaf\\News layoffs and output - IC2S2\\figures\\section_composition.png", width=4, height=3)
 ```
 
