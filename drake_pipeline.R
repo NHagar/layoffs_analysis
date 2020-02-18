@@ -1,10 +1,9 @@
 library(drake)
 library(lubridate)
-library(ggrepel)
 
-source("../scripts/functions_metadata.R")
-source("../scripts/functions_ts.R")
-source("../scripts/functions_text.R")
+source("./scripts/functions_metadata.R")
+source("./scripts/functions_ts.R")
+source("./scripts/functions_text.R")
 
 plan <- drake_plan(
   cutoff = as_date("2019-01-25"),
@@ -39,34 +38,11 @@ plan <- drake_plan(
     summarize(stories=n()) %>% 
     mutate(pct_stories=stories/sum(stories)),
   plot_sections = section_plot(sections_prepost),
-  results = rmarkdown::render(knitr_in("results.Rmd"),
-                              output_file = file_out("results.html"),
+  results = rmarkdown::render(knitr_in("./results/results.Rmd"),
+                              output_file = file_out("./results/results.html"),
                               quiet=T)
 )
 
 make(plan)
 
 vis_drake_graph(plan)
-
-
-loadd(data)
-
-layoffs <- load_layoffs()
-
-data %>%
-  filter(pub_date>as_date("2019-01-25")-43 & pub_date<as_date("2019-01-25")+43) %>% 
-  group_by(byline) %>% 
-  summarize(stories=n()) %>% 
-  mutate(byline_cleaned =  gsub('[[:punct:] ]+','',tolower(byline))) %>% 
-  filter(byline_cleaned %in% layoffs$byline_cleaned)
-data
-layoffs
-
-loadd(cohort_agg_storiesper)
-
-cohort_agg_storiesper %>% filter(measure<1)
-%>% 
-  group_by(section) %>% 
-  summarize(stories=n()) %>% 
-  arrange(desc(stories)) %>% 
-  mutate(pct=stories/sum(stories))
