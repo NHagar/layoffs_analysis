@@ -10,7 +10,7 @@ plan <- drake_plan(
   window = 43,
   sections = c("politics", "Arts & Entertainment", "world", "tech", "reader", "science", "books",
                "opinion", "health", "national", "lgbt", "investigations", "business"),
-  raw_data =  read_csv(file_in('../data/scraped_stories_761days-all.csv')),
+  raw_data =  read_csv(file_in('./data/scraped_stories_761days-all.csv')),
   data = clean_data(raw_data),
   data_social = text_embeds(data),
   data_sentiment = text_sent(data_social),
