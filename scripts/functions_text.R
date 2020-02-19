@@ -60,7 +60,7 @@ text_sent <- function(df) {
 }
 
 #Tag parts of speech and entities with spacy
-text_tag <- function(df, token_path='../data/tagged_text_tokens.csv', ent_path='../data/tagged_text_entities.csv') {
+text_tag <- function(df, token_path='./data/tagged_text_tokens.csv', ent_path='./data/tagged_text_entities.csv') {
   tagged_text <- df %>% 
     rename("doc_id"=link, "text"=text_body) %>% 
     select(doc_id, text) %>% 
@@ -74,10 +74,7 @@ text_tag <- function(df, token_path='../data/tagged_text_tokens.csv', ent_path='
 #Mutate measures
 text_measures <- function(df) {
   df_mutate <- df %>% 
-    mutate(neg_pct=negative/len_words,
-           pos_pct=positive/len_words,
-           polarity=pos_pct-neg_pct,
-           log_len_chars=log1p(len_chars),
+    mutate(log_len_chars=log1p(len_chars),
            log_len_words=log1p(len_words),
            has_tweet=tweets>0,
            has_insta=insta>0)

@@ -5,7 +5,7 @@ library(tidyverse)
 library(lubridate)
 
 #Load and clean the data
-clean_data <- function(df) {
+clean_data <- function(df, cutoff, window) {
   df_clean <- df %>% 
     select(-X1) %>% 
     distinct() %>% 
@@ -17,13 +17,14 @@ clean_data <- function(df) {
     separate(l, c("datel", "l2"), sep=", at") %>% 
     filter(!is.na(datel)) %>% 
     mutate(pub_date=mdy(datel)) %>% 
-    select(-f, -l2, -datel)
+    select(-f, -l2, -datel) %>% 
+    filter(pub_date>(cutoff-window) & pub_date<(cutoff+window))
   return(df_clean)
 }
 
 #Load the list of cleaned layoff names
 load_layoffs <- function() {
-  layoffs <- read_csv('../data/layoffs_lists_joined.csv') %>% 
+  layoffs <- read_csv('./data/layoffs_lists_joined.csv') %>% 
     rename('names'=`0`) %>% 
     select(names) %>% 
     #Remove punctuation and spaces, lowercase
@@ -54,16 +55,14 @@ layoff_percent <- function(df) {
 }
 
 #Aggregate measures around a cutoff point
-agg_measures <- function(df, cutoff, days, remove_holidays=F) {
+agg_measures <- function(df, remove_holidays=F) {
   df_agg = df %>% 
     group_by(pub_date) %>% 
     summarize(stories=n(), bylines=n_distinct(byline), storiesper=stories/bylines,
               log_len_chars=mean(log_len_chars), log_len_words=mean(log_len_words),
-              polarity=mean(polarity)*1000,
               pct_tweet=sum(has_tweet)/n()*100,
               pct_insta=sum(has_insta)/n()*100) %>% 
-    mutate(day_of_week=wday(pub_date)) %>% 
-    filter(pub_date>(cutoff-days) & pub_date<(cutoff+days))
+    mutate(day_of_week=wday(pub_date))
   if (remove_holidays==T) {
     df_agg <- df_agg %>% 
       filter(!pub_date %in% c(as_date("12-24-2018"), 
@@ -75,11 +74,10 @@ agg_measures <- function(df, cutoff, days, remove_holidays=F) {
 }
 
 #Limit data to surviving cohort
-cohort_build <- function(df, cutoff, window) {
-  laid_off <- read_csv("../data/layoffs_lists_joined.csv") %>% 
+cohort_build <- function(df, cutoff) {
+  laid_off <- read_csv("./data/layoffs_lists_joined.csv") %>% 
     select(`0`) %>% rename("name"=`0`)
   df %>% 
-    filter(pub_date>cutoff-window & pub_date<cutoff+window) %>% 
     group_by(byline) %>% 
     summarize(first_pub=min(pub_date),
               last_pub=max(pub_date),

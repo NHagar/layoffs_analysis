@@ -43,14 +43,6 @@ loadd(cohort_rdd_cohort_agg_pct_tweet)
 summary(cohort_rdd_cohort_agg_pct_tweet)
 ```
 
-## Polarity changes (cohort)
-```{r}
-loadd(cohort_agg_polarity)
-loadd(cohort_rdd_cohort_agg_polarity)
-#plot(cohort_rdd_cohort_agg_polarity)
-summary(cohort_rdd_cohort_agg_polarity)
-```
-
 ## Insta embed changes (cohort)
 ```{r}
 loadd(cohort_agg_pct_insta)
