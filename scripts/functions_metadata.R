@@ -8,7 +8,7 @@ library(lubridate)
 clean_data <- function(df, cutoff, window) {
   df_clean <- df %>% 
     select(-X1) %>% 
-    distinct() %>% 
+    mutate(link=gsub("\\/$", "", link)) %>% 
     #get rid of JS junk
     mutate(text_body=gsub("\\{.*?\\}\n", "", text_body)) %>% 
     #Get rid of extra whitespace/newlines
@@ -18,7 +18,8 @@ clean_data <- function(df, cutoff, window) {
     filter(!is.na(datel)) %>% 
     mutate(pub_date=mdy(datel)) %>% 
     select(-f, -l2, -datel) %>% 
-    filter(pub_date>(cutoff-window) & pub_date<(cutoff+window))
+    filter(pub_date>(cutoff-window) & pub_date<(cutoff+window)) %>% 
+    distinct()
   return(df_clean)
 }
 

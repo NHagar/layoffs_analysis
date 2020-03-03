@@ -1,13 +1,14 @@
 #--
 #Functions to handle article text processing
 #--
-
 library(futile.logger)
 library(tidyverse)
+library(textmineR)
 library(tidytext)
 library(cleanNLP)
 library(hunspell)
-library(mallet)
+
+data("stop_words")
 
 sentiment <- get_sentiments("bing")
 cnlp_init_spacy(model_name="en_core_web_lg")
@@ -80,3 +81,99 @@ text_measures <- function(df) {
            has_insta=insta>0)
   return(df_mutate)
 }
+
+#Topic model
+build_dtm <- function(df) {
+  sw <- stop_words$word
+  
+  sw <- c(sw, "buzzfeed", 
+          "buzzfeed_news", 
+          "getty", 
+          "getty_images", 
+          "afp", 
+          "afp_getty", 
+          "images", 
+          "news",
+          "min",
+          "min_width")
+  
+  df <- df %>% 
+    filter(!grepl("}", text_body))
+  
+  dtm <- CreateDtm(doc_vec = df$text_body,
+                   doc_names = df$link,
+                   ngram_window = c(1,2),
+                   stopword_vec = sw,
+                   verbose = T)
+  dtm <- dtm[,colSums(dtm) > 16]
+  
+  return(dtm)
+}
+
+mlist <- function(df) {
+  dtm <- build_dtm(df)
+  
+  k_list <- seq(5, 30, by=5)
+
+  model_list <- TmParallelApply(X = k_list, FUN = function(k) {
+    model <- FitLdaModel(dtm = dtm, 
+                         k = k,
+                         iterations = 1000,
+                         burnin = 180,
+                         alpha = 0.1,
+                         beta = 0.05,
+                         optimize_alpha = TRUE,
+                         calc_likelihood = TRUE,
+                         calc_coherence = TRUE,
+                         calc_r2 = TRUE)
+    model$k <- k
+    
+    model
+  }, export = ls())
+    
+  return(model_list)
+}
+
+topic_model <- function(model_list) {
+  coherence_mat <- data.frame(k = sapply(model_list, function(x) nrow(x$phi)), 
+                              coherence = sapply(model_list, function(x) mean(x$coherence)), 
+                              stringsAsFactors = FALSE)
+  
+  model_filtering <- coherence_mat %>% 
+    mutate(rown = row_number()) %>% 
+    filter(coherence==max(coherence)) 
+  
+  model_num <- model_filtering %>% 
+    pull(rown)
+  
+  k <- model_filtering %>% 
+    pull(k)
+  
+  model_max <- model_list[[model_num]]
+  
+  doc_topics <- as_tibble(model_max$theta) %>% 
+    mutate(link=names(model_max$theta[,1])) %>% 
+    pivot_longer(cols=1:k, names_to="topic") %>% 
+    group_by(link) %>% 
+    filter(value==max(value)) %>% 
+    ungroup() %>% 
+    select(-value)
+  
+  return(list(model=model_max, df=doc_topics))
+}
+
+#Filter entities
+filter_ents <- function(df, text) {
+  collapsed_text <- paste(text, sep="", collapse="")
+  filtered_names <-  df %>% 
+    filter(entity_type=="PERSON" & !grepl("\\(", entity) & !grepl("\\[", entity)) %>% 
+    mutate(is_body=str_detect(collapsed_text, paste(entity, "(?!/)(?! /)", sep=""))) %>% 
+    filter(is_body==T)
+  df <- df %>% 
+    filter(entity_type!="PERSON" | entity %in% filtered_names$entity) %>% 
+    mutate(entity=tolower(entity)) %>% 
+    distinct()
+  
+  return(df)
+}
+
