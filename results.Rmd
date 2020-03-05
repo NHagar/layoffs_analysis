@@ -29,42 +29,10 @@ summary(rdd_model_data_noseason_bylines)
 
 ## Storyper count changes (cohort)
 ```{r}
-loadd(cohort_agg_storiesper)
-loadd(cohort_rdd_cohort_agg_storiesper)
-#plot(cohort_rdd_cohort_agg_storiesper)
-cohort_rdd_cohort_agg_storiesper$p
-```
-
-## Tweet embed changes (cohort)
-```{r}
-loadd(cohort_agg_pct_tweet)
-loadd(cohort_rdd_cohort_agg_pct_tweet)
-#plot(cohort_rdd_cohort_agg_pct_tweet)
-summary(cohort_rdd_cohort_agg_pct_tweet)
-```
-
-## Insta embed changes (cohort)
-```{r}
-loadd(cohort_agg_pct_insta)
-loadd(cohort_rdd_cohort_agg_pct_insta)
-#plot(cohort_rdd_cohort_agg_pct_insta)
-summary(cohort_rdd_cohort_agg_pct_insta)
-```
-
-## Char count changes (cohort)
-```{r}
-loadd(cohort_agg_log_len_chars)
-loadd(cohort_rdd_cohort_agg_log_len_chars)
-#plot(cohort_rdd_cohort_agg_log_len_chars)
-summary(cohort_rdd_cohort_agg_log_len_chars)
-```
-
-## Word count changes (cohort)
-```{r}
-loadd(cohort_agg_log_len_words)
-loadd(cohort_rdd_cohort_agg_log_len_words)
-#plot(cohort_rdd_cohort_agg_log_len_words)
-summary(cohort_rdd_cohort_agg_log_len_words)
+loadd(cohort_agg)
+loadd(cohort_rdd)
+#plot(cohort_rdd)
+summary(cohort_rdd)
 ```
 
 ## Section composition
@@ -73,9 +41,3 @@ loadd(plot_sections)
 plot_sections
 ggsave("C:\\Users\\nrh146\\Dropbox\\Apps\\Overleaf\\News layoffs and output - IC2S2\\figures\\section_composition.png", width=4, height=3)
 ```
-
-```{r}
-loadd(plot_topics)
-plot_topics
-```
-
