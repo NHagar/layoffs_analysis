@@ -40,6 +40,21 @@ plan <- drake_plan(
                            summarize(stories=n()) %>% 
                            mutate(pct_stories=stories/sum(stories)),
   plot_sections = section_plot(data_sections),
+  embed_model = starspace_load_model(file_in("textspace.ruimtehol")),
+  embeddings = starspace_embedding(embed_model, data_window$text_body) %>% 
+    as_tibble() %>% 
+    bind_cols(data_window) %>% 
+    unite("e", V1:V100, remove=F) %>% 
+    distinct(e, .keep_all=T) %>% 
+    select(-e),
+  tsne = target(tsne_coords(embeddings, sec, period, cutoff),
+                transform=cross(sec=c("politics", "world", "", "Arts & Entertainment"), period=c("pre", "post"))),
+  tsne_plots = target(tsne %>% 
+                        ggplot(aes(X, Y, color=section)) + 
+                        geom_point() +
+                        scale_x_continuous(limits = c(-40, 40)) + 
+                        scale_y_continuous(limits = c(-40, 40)),
+                       transform=map(tsne)),
   out = rmarkdown::render(knitr_in("results.Rmd"),
                               output_file = file_out("results.html"),
                           quiet=T)
@@ -49,6 +64,45 @@ make(plan)
 
 vis_drake_graph(plan)
 
+
+loadd(tsne_politics_pre)
+loadd(tsne_politics_post)
+loadd(tsne_world_pre)
+loadd(tsne_world_post)
+
+tsne_politics_pre %>% 
+  filter(X <-15 & X>-25) %>% 
+  select(hed) %>% 
+  pull()
+
+tsne_politics_post %>% 
+  filter(X < -25) %>% 
+  select(hed) %>% 
+  pull()
+
+tsne_world_pre %>% 
+  filter(X>0 & X<20 & Y<0) %>% 
+  select(hed) %>% 
+  pull()
+
+tsne_world_post %>% 
+  filter(X>0 & X<20 & Y<0) %>% 
+  select(hed) %>% 
+  pull()
+
+test <- tsne_coords(embeddings, "politics", "pre", as_date("2019-01-25"))
+
+embeddings %>% 
+  filter(section=="politics")
+
+test
+
+
+
+loadd(tsne_world_post)
+
+tsne_politics_post %>% select(section)
+tsne_world_post
 
 loadd(data_pre)
 
