@@ -23,7 +23,9 @@ text_embeds <- function(df) {
            text_body=text_clean(text_body),
            #Get text length
            len_chars = str_length(text_body),
-           len_words = str_count(text_body, "\\w+"))
+           len_words = str_count(text_body, "\\w+")) %>% 
+    distinct() %>% 
+    distinct(text_body, .keep_all=T)
   return(df_social)
 }
 

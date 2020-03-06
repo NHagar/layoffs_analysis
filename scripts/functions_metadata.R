@@ -5,7 +5,7 @@ library(tidyverse)
 library(lubridate)
 
 #Load and clean the data
-clean_data <- function(df, cutoff, window) {
+clean_data <- function(df) {
   df_clean <- df %>% 
     select(-X1) %>% 
     mutate(link=gsub("\\/$", "", link)) %>% 
@@ -18,8 +18,8 @@ clean_data <- function(df, cutoff, window) {
     filter(!is.na(datel)) %>% 
     mutate(pub_date=mdy(datel)) %>% 
     select(-f, -l2, -datel) %>% 
-    filter(pub_date>(cutoff-window) & pub_date<(cutoff+window)) %>% 
-    distinct()
+    distinct() %>% 
+    distinct(text_body, .keep_all=T)
   return(df_clean)
 }
 
