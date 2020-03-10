@@ -180,7 +180,7 @@ filter_ents <- function(df, text) {
 }
 
 #Generate 2-dimensional coordinates with tsne
-tsne_coords <- function(df, sec, period=c("pre", "post", "all"), cutoff) {
+tsne_coords <- function(df) {
   tsne <- df %>% 
     select(V1:V100) %>% 
     as.matrix() %>% 
@@ -191,6 +191,10 @@ tsne_coords <- function(df, sec, period=c("pre", "post", "all"), cutoff) {
     rename(c("X"=V1, "Y"=V2)) %>% 
     bind_cols(df)
   
+  return(df_coords)
+}
+
+tsne_split <- function(df_coords, sec, period=c("pre", "post", "all"), cutoff) {
   if (period=="pre") {
     df_coords <- df_coords %>% 
       filter(pub_date<cutoff)

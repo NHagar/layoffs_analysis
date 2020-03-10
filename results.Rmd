@@ -44,23 +44,50 @@ ggsave("C:\\Users\\nrh146\\Dropbox\\Apps\\Overleaf\\News layoffs and output - IC
 
 ## Overall semantic spread
 ```{r}
-readd(tsne_plots_tsne__pre)
+readd(tsne_plots_tsne__pre) + 
+  annotate("rect", xmin = 4.5, xmax = 10, ymin = -21, ymax = -15,
+           alpha = .2, color="red") + 
+  annotate("text", x=15, y=-23, label="Health news", size=6)
 
-readd(tsne_plots_tsne__post)
+readd(tsne_plots_tsne__post) + 
+  annotate("rect", xmin = -25, xmax = -18, ymin = 8, ymax = 15,
+           alpha = .2, color="red") + 
+  annotate("text", x=-24, y=18, label="Jussie Smollett coverage", size=5)
 ```
 
 ## Politics semantic spread
 ```{r}
-readd(tsne_plots_tsne_politics_pre)
+readd(tsne_plots_tsne_politics_pre) + 
+  annotate("rect", xmin=18, xmax=30, ymin=-10, ymax=23, alpha=.2, color="red") + 
+  annotate("text", x=21, y=-15, size=6, label="Trump administration") + 
+  annotate("rect", xmin=2, xmax=16, ymin=15, ymax=30, alpha=.2, color="red") + 
+  annotate("text", x=5, y=34, size=6, label="2020 election")
 
-readd(tsne_plots_tsne_politics_post)
+
+readd(tsne_plots_tsne_politics_post) + 
+  annotate("rect", xmin=18, xmax=30, ymin=-10, ymax=23, alpha=.2, color="red") + 
+  annotate("text", x=21, y=-15, size=6, label="Trump administration") + 
+  annotate("rect", xmin=2, xmax=16, ymin=15, ymax=30, alpha=.2, color="red") + 
+  annotate("text", x=5, y=34, size=6, label="2020 election")
 ```
 
 ## World semantic spread
 ```{r}
-readd(tsne_plots_tsne_world_pre)
+readd(tsne_plots_tsne_world_pre) + 
+  annotate("rect", xmin=1, xmax=13.5, ymin=5, ymax=20, alpha=.2, color="red") + 
+  annotate("text", x=0, y=24, size=6, label="Human rights") + 
+  annotate("rect", xmin=9, xmax=24, ymin=-6, ymax=4, alpha=.2, color="red") + 
+  annotate("text", x=20, y=-10, size=6, label="International relations") + 
+  annotate("rect", xmin=14, xmax=26, ymin=5, ymax=15, alpha=.2, color="red") + 
+  annotate("text", x=25, y=19, size=6, label="Immigration")
 
-readd(tsne_plots_tsne_world_post)
+readd(tsne_plots_tsne_world_post) + 
+  annotate("rect", xmin=1, xmax=13.5, ymin=5, ymax=20, alpha=.2, color="red") + 
+  annotate("text", x=0, y=24, size=6, label="Human rights") + 
+  annotate("rect", xmin=9, xmax=24, ymin=-6, ymax=4, alpha=.2, color="red") + 
+  annotate("text", x=20, y=-10, size=6, label="International relations") + 
+  annotate("rect", xmin=14, xmax=26, ymin=5, ymax=15, alpha=.2, color="red") + 
+  annotate("text", x=25, y=19, size=6, label="Immigration")
 ```
 
 # Arts semantic spread

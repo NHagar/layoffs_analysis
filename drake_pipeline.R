@@ -1,6 +1,6 @@
 library(drake)
 library(lubridate)
-
+library(ggforce)
 library(ruimtehol)
 library(Rtsne)
 
@@ -47,10 +47,11 @@ plan <- drake_plan(
     unite("e", V1:V100, remove=F) %>% 
     distinct(e, .keep_all=T) %>% 
     select(-e),
-  tsne = target(tsne_coords(embeddings, sec, period, cutoff),
+  tsne_embeddings = tsne_coords(embeddings),
+  tsne = target(tsne_split(tsne_embeddings, sec, period, cutoff),
                 transform=cross(sec=c("politics", "world", "", "Arts & Entertainment"), period=c("pre", "post"))),
   tsne_plots = target(tsne %>% 
-                        ggplot(aes(X, Y, color=section)) + 
+                        ggplot(aes(X, Y)) + 
                         geom_point() +
                         scale_x_continuous(limits = c(-40, 40)) + 
                         scale_y_continuous(limits = c(-40, 40)),
@@ -65,15 +66,71 @@ make(plan)
 vis_drake_graph(plan)
 
 
+loadd(data_window)
+data_window
+
+loadd(data_pre)
+library(tidyverse)
+data_pre %>% 
+  mutate(year=year(pub_date)) %>% 
+  ggplot(aes(year)) + 
+  geom_histogram()
+
+data_pre %>% 
+  filter(is.na(section))
+
 loadd(tsne_politics_pre)
 loadd(tsne_politics_post)
 loadd(tsne_world_pre)
 loadd(tsne_world_post)
+loadd(tsne_plots_tsne_politics_pre)
+loadd(tsne_plots_tsne_politics_post)
+loadd(tsne_plots_tsne_world_pre)
+loadd(tsne_plots_tsne_world_post)
+
+
+loadd(tsne__pre)
+loadd(tsne__post)
+
+tsne__pre %>% 
+  filter(X<10 & X>5 & Y< -15 & Y>-20) %>% 
+  pull(hed)
+
+tsne__post %>% 
+  filter(X< -18 & X> -25 & Y< 25 & Y> 7) %>% 
+  pull(hed)
 
 tsne_politics_pre %>% 
-  filter(X <-15 & X>-25) %>% 
+  filter(X >20 & X<30 & Y> 3 & Y<25) %>% 
   select(hed) %>% 
   pull()
+
+tsne_politics_post %>% 
+  filter(X >20 & X<30 & Y> -10 & Y<10) %>%  
+  select(hed) %>% 
+  pull()
+
+tsne_plots_tsne_politics_pre + 
+  annotate("rect", xmin=18, xmax=30, ymin=-10, ymax=23, alpha=.2, color="red") + 
+  annotate("text", x=21, y=-15, size=6, label="Trump administration") + 
+  annotate("rect", xmin=2, xmax=16, ymin=15, ymax=30, alpha=.2, color="red") + 
+  annotate("text", x=5, y=34, size=6, label="2020 election")
+
+tsne_plots_tsne_politics_post + 
+  annotate("rect", xmin=18, xmax=30, ymin=-10, ymax=23, alpha=.2, color="red") + 
+  annotate("text", x=21, y=-15, size=6, label="Trump administration") + 
+  annotate("rect", xmin=2, xmax=16, ymin=15, ymax=30, alpha=.2, color="red") + 
+  annotate("text", x=5, y=34, size=6, label="2020 election")
+
+tsne_plots_tsne_world_pre + 
+  annotate("rect", xmin=1, xmax=13.5, ymin=5, ymax=20, alpha=.2, color="red") + 
+  annotate("text", x=0, y=24, size=6, label="Human rights") + 
+  annotate("rect", xmin=9, xmax=24, ymin=-6, ymax=4, alpha=.2, color="red") + 
+  annotate("text", x=20, y=-10, size=6, label="International relations") + 
+  annotate("rect", xmin=14, xmax=26, ymin=5, ymax=15, alpha=.2, color="red") + 
+  annotate("text", x=25, y=19, size=6, label="Immigration")
+
+tsne_plots_tsne_world_post
 
 tsne_politics_post %>% 
   filter(X < -25) %>% 
@@ -81,14 +138,49 @@ tsne_politics_post %>%
   pull()
 
 tsne_world_pre %>% 
-  filter(X>0 & X<20 & Y<0) %>% 
+  filter(X>0 & X<15 & Y>5 & Y<20) %>% 
   select(hed) %>% 
   pull()
 
 tsne_world_post %>% 
-  filter(X>0 & X<20 & Y<0) %>% 
+  filter(X>0 & X<15 & Y>5 & Y<20) %>%  
   select(hed) %>% 
   pull()
+
+
+tsne_world_pre %>% 
+  filter(X>10 & X<25 & Y> -5 & Y<5) %>% 
+  select(hed) %>% 
+  pull()
+
+tsne_world_post %>% 
+  filter(X>10 & X<25 & Y> -5 & Y<5) %>% 
+  select(hed) %>% 
+  pull()
+
+tsne_world_pre %>% 
+  filter(X>10 & X<25 & Y> 5 & Y<20) %>% 
+  select(hed) %>% 
+  pull()
+
+loadd(data_noseason_stories)
+loadd(rdd_model_data_noseason_stories)
+plot(rdd_model_data_noseason_stories, xlab="Days pre-/post-layoffs", ylab="Stories published")
+
+
+loadd(tsne_plots_tsne__pre)
+loadd(tsne_plots_tsne__post)
+
+tsne_plots_tsne__pre + 
+  annotate("rect", xmin = 4.5, xmax = 10, ymin = -21, ymax = -15,
+           alpha = .2, color="red") + 
+  annotate("text", x=15, y=-23, label="Health news", size=6)
+
+readd(tsne_plots_tsne__post) + 
+  annotate("rect", xmin = -25, xmax = -18, ymin = 8, ymax = 15,
+           alpha = .2, color="red") + 
+  annotate("text", x=-24, y=18, label="Jussie Smollett coverage", size=5)
+
 
 test <- tsne_coords(embeddings, "politics", "pre", as_date("2019-01-25"))
 
