@@ -4,6 +4,8 @@ library(ggforce)
 library(ruimtehol)
 library(Rtsne)
 
+use_condaenv("parks")
+
 set.seed(20200223)
 
 source("./scripts/functions_metadata.R")
@@ -38,18 +40,25 @@ plan <- drake_plan(
                            mutate(prepost=ifelse(pub_date<cutoff, 0, 1)) %>% 
                            group_by(prepost, section) %>% 
                            summarize(stories=n()) %>% 
-                           mutate(pct_stories=stories/sum(stories)),
+                           mutate(pct_stories=stories/sum(stories)*100),
   plot_sections = section_plot(data_sections),
   embed_model = starspace_load_model(file_in("textspace.ruimtehol")),
-  embeddings = starspace_embedding(embed_model, data_window$text_body) %>% 
+  embeddings_starspace = starspace_embedding(embed_model, data_window$text_body) %>% 
     as_tibble() %>% 
     bind_cols(data_window) %>% 
     unite("e", V1:V100, remove=F) %>% 
     distinct(e, .keep_all=T) %>% 
     select(-e),
-  tsne_embeddings = tsne_coords(embeddings),
+  embeddings_spacy = gen_spacy_embeddings(data_window),
+  tsne_embeddings = target(
+    tsne_coords(embeddings),
+    transform=map(embeddings=c(embeddings_starspace, embeddings_spacy)),
+    .names=c("starspace", "spacy")
+  ),
   tsne = target(tsne_split(tsne_embeddings, sec, period, cutoff),
-                transform=cross(sec=c("politics", "world", "", "Arts & Entertainment"), period=c("pre", "post"))),
+                transform=cross(tsne_embeddings,
+                                sec=c("politics", "world", "", "Arts & Entertainment"), 
+                                period=c("pre", "post"))),
   tsne_plots = target(tsne %>% 
                         ggplot(aes(X, Y)) + 
                         geom_point() +
@@ -65,6 +74,7 @@ make(plan)
 
 vis_drake_graph(plan)
 
+readd(data)
 
 loadd(data_window)
 data_window
@@ -243,3 +253,9 @@ test_embed <- starspace_embedding(m, test)
 
 
 unname(test_embed)
+
+
+
+readd(data_sections) %>% 
+  mutate(pct_stories=pct_stories*100) %>% 
+  section_plot()
