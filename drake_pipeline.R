@@ -4,8 +4,6 @@ library(ggforce)
 library(ruimtehol)
 library(Rtsne)
 
-use_condaenv("parks")
-
 set.seed(20200223)
 
 source("./scripts/functions_metadata.R")
@@ -13,58 +11,82 @@ source("./scripts/functions_ts.R")
 source("./scripts/functions_text.R")
 
 plan <- drake_plan(
+  # Define inflection point
   cutoff = as_date("2019-01-25"),
+  # Define window to measure before/after inflection
   window = 43,
-  sections = c("politics", "Arts & Entertainment", "world", "tech", "reader", "science", "books",
-               "opinion", "health", "national", "lgbt", "investigations", "business"),
+  # Enumerate section names
+  sections = factor(c("politics", "Arts & Entertainment", "world", "tech", "reader", "science", "books",
+               "opinion", "health", "national", "lgbt", "investigations", "business")),
+  # Load in raw data file
   raw_data =  read_csv(file_in('./data/scraped_stories_761days-all.csv')),
+  # Clean data - URL, headline, text, and pub date
   data = clean_data(raw_data),
+  # Count and remove social media embeds
+  # TODO: Define text_clean function used here
   data_social = text_embeds(data),
+  # Text descriptive stats
   data_mutate = text_measures(data_social),
+  # Split data into pre and post window
   data_pre = data_mutate %>% 
     filter(pub_date<cutoff),
   data_window = data_mutate %>% 
     filter(pub_date>cutoff-window & pub_date<cutoff+window),
+  # Get laid off cohort
+  # TODO: Break out file read / processing functions
   cohort = cohort_build(data_window, cutoff),
+  # TODO: Implement and describe
   data_agg = agg_measures(data_window),
+  # TODO: Implement and describe
   data_noseason = target(deseason(data_agg, outcome, cutoff),
                          transform = cross(data_agg, outcome=c("stories", "bylines"))),
   rdd_model = target(RDestimate(deseasoned ~ relative_days, data=data_noseason, cutpoint = 0),
                       transform=map(data_noseason)),
+  # TODO: Implement and describe
   cohort_agg = agg_measures(cohort) %>% 
                   mutate(relative_days=pub_date-cutoff) %>% 
                   select(relative_days, storiesper) %>% 
                   rename("measure"=storiesper),
+  # TODO: Implement and describe
   cohort_rdd = RDestimate(measure ~ relative_days, data=cohort_agg, cutpoint=0),
+  # TODO: Implement and describe
   data_sections = data %>% filter(section %in% sections) %>% 
                            mutate(prepost=ifelse(pub_date<cutoff, 0, 1)) %>% 
                            group_by(prepost, section) %>% 
                            summarize(stories=n()) %>% 
                            mutate(pct_stories=stories/sum(stories)*100),
+  # TODO: Implement and describe
   plot_sections = section_plot(data_sections),
+  # TODO: Implement and describe
   embed_model = starspace_load_model(file_in("textspace.ruimtehol")),
+  # TODO: Implement and describe
   embeddings_starspace = starspace_embedding(embed_model, data_window$text_body) %>% 
     as_tibble() %>% 
     bind_cols(data_window) %>% 
     unite("e", V1:V100, remove=F) %>% 
     distinct(e, .keep_all=T) %>% 
     select(-e),
+  # TODO: Implement and describe
   embeddings_spacy = gen_spacy_embeddings(data_window),
+  # TODO: Implement and describe
   tsne_embeddings = target(
     tsne_coords(embeddings),
     transform=map(embeddings=c(embeddings_starspace, embeddings_spacy)),
     .names=c("starspace", "spacy")
   ),
+  # TODO: Implement and describe
   tsne = target(tsne_split(tsne_embeddings, sec, period, cutoff),
                 transform=cross(tsne_embeddings,
                                 sec=c("politics", "world", "", "Arts & Entertainment"), 
                                 period=c("pre", "post"))),
+  # TODO: Implement and describe
   tsne_plots = target(tsne %>% 
                         ggplot(aes(X, Y)) + 
                         geom_point() +
                         scale_x_continuous(limits = c(-40, 40)) + 
                         scale_y_continuous(limits = c(-40, 40)),
                        transform=map(tsne)),
+  # TODO: Implement and describe
   out = rmarkdown::render(knitr_in("results.Rmd"),
                               output_file = file_out("results.html"),
                           quiet=T)
