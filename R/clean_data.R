@@ -5,7 +5,7 @@
 ##' @title
 ##' @param raw_data
 clean_data <- function(raw_data) {
-    df_clean <- df %>% 
+    df_clean <- raw_data %>% 
       select(-X1) %>% 
       mutate(link=gsub("\\/$", "", link)) %>% 
       #get rid of JS junk
