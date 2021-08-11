@@ -19,3 +19,20 @@ text_embeds <- function(df) {
     distinct(text_body, .keep_all=T)
   return(df_social)
 }
+
+
+#Text cleaning
+text_clean <- function(s) {
+  clean_string <- s %>% 
+    #Get rid of embedded tweets
+    gsub("\\}.*? Retweet Favorite", "", .)  %>%
+    #Get rid of related stories
+    gsub("·.*", "", .) %>% 
+    #Get rid of Instagram embeds
+    gsub(" View this photo on Instagram ", "", .) %>% 
+    #Get rid of Instagram embeds
+    gsub("Instagram: @[A-z]* ", "", .) %>% 
+    #Get rid of Twitter attributions
+    gsub("@[A-z]* // Twitter ", "", .)
+  return(clean_string)
+}

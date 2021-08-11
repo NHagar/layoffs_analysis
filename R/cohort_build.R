@@ -6,10 +6,8 @@
 ##' @param data_window
 ##' @param cutoff
 #Limit data to surviving cohort
-cohort_build <- function(df, cutoff) {
-  laid_off <- read_csv("./data/layoffs_lists_joined.csv") %>% 
-    select(`0`) %>% rename("name"=`0`)
-  df %>% 
+cohort_build <- function(laid_off, df, cutoff) {
+  cohort <- df %>% 
     group_by(byline) %>% 
     summarize(first_pub=min(pub_date),
               last_pub=max(pub_date),
@@ -18,4 +16,6 @@ cohort_build <- function(df, cutoff) {
     ungroup() %>% 
     anti_join(laid_off, by=c("byline"="name")) %>% 
     left_join(df)
+  
+  return(cohort)
 }
