@@ -1,4 +1,4 @@
-# TODO: Incorporate model training into pipeline
+# TODO: Compare data sources
 # TODO: Better analysis of pre/post embedding spaces
 lapply(list.files("./R", full.names = TRUE), source)
 
@@ -25,6 +25,15 @@ plan <- drake_plan(
     filter(pub_date<cutoff),
   data_window = data_mutate %>% 
     filter(pub_date>cutoff-window & pub_date<cutoff+window),
+  # Export Starspace model training documents
+  document_export = data_pre  %>% 
+    select(text_body) %>% 
+    pull() %>% 
+    writeLines(sep="\n", con=file_out("training_docs.txt")),
+  model = starspace(model=file_out("textspace.ruimtehol"), 
+                    file = file_in("training_docs.txt"), 
+                    dim = 100, 
+                    trainMode = 5),
   # Get laid off cohort
   laid_off = read_csv(file_in("./data/layoffs_lists_joined.csv")) %>% 
     select(`0`) %>% rename("name"=`0`),
@@ -82,4 +91,3 @@ plan <- drake_plan(
 make(plan)
 
 vis_drake_graph(plan)
-
