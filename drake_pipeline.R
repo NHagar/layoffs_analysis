@@ -1,4 +1,3 @@
-# TODO: Compare data sources
 # TODO: Better analysis of pre/post embedding spaces
 lapply(list.files("./R", full.names = TRUE), source)
 
@@ -21,12 +20,12 @@ plan <- drake_plan(
   # Text descriptive stats
   data_mutate = text_measures(data_social),
   # Split data into pre and post window
-  data_pre = data_mutate %>% 
-    filter(pub_date<cutoff),
+  data_train = data_mutate %>% 
+    filter(pub_date>cutoff - 380 & pub_date<cutoff+window),
   data_window = data_mutate %>% 
     filter(pub_date>cutoff-window & pub_date<cutoff+window),
   # Export Starspace model training documents
-  document_export = data_pre  %>% 
+  document_export = data_train  %>% 
     select(text_body) %>% 
     pull() %>% 
     writeLines(sep="\n", con=file_out("training_docs.txt")),
