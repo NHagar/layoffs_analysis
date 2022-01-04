@@ -9,4 +9,3 @@ dates = pd.date_range(start_date, end_date)
 
 # %%
 urls.collect_urls(dates, "./data/archive_urls_raw.txt")
-# %%
