@@ -3,7 +3,9 @@ import re
 from typing import List
 
 from bs4 import BeautifulSoup
+import pandas as pd
 import requests
+from tqdm import tqdm
 
 def load_and_filter_urls(path: str) -> List[str]:
     with open(path, "r") as f:
@@ -39,20 +41,45 @@ def scrape_article(url: str):
         art = soup.find("div", {"class": "js-article-wrapper"})
         text = [i.text for i in art.find_all(["p", "h2"])]
 
-    return ""
+    result = {
+        "tag": tag,
+        "authors": authors,
+        "pub_date": pub_dt,
+        "hed": hed,
+        "article_text": text
+    }
+
+    return result
 
 def collect_articles(urls):
     complete_path = pathlib.Path("./data/completed.txt")
+    article_data_path = pathlib.Path("./data/article_data.csv")
     if complete_path.exists():
         with open(complete_path, "r") as f:
             completed_urls = f.readlines()
         completed_urls = [i.replace("\n") for i in completed_urls]
         urls = list(set(urls) - set(completed_urls))
-    for u in urls:
+    for u in tqdm(urls):
         contents = scrape_article(u)
-        # Conditionally scrape contents
-        # Pull desired elements
-        # Append to dataframe
-        # Add URL to completed list
-        ""
+        if contents:
+            contents = pd.DataFrame(contents)
+            if article_data_path.exists():
+                mode = "a"
+                header = False
+            else:
+                mode = "w"
+                header = True
+
+            if complete_path.exists():
+                mode = 'a'
+            else:
+                mode = 'w'
+
+            contents.to_csv(article_data_path, mode=mode, header=header, index=False)
+
+            with open(complete_path, mode) as f:
+                f.write(f"{u}\n")
+
+        else:
+            continue
     
