@@ -3,6 +3,7 @@ import re
 from typing import List
 
 from bs4 import BeautifulSoup
+from numpy import log
 import pandas as pd
 import requests
 from tqdm import tqdm
@@ -51,16 +52,15 @@ def scrape_article(url: str):
 
     return result
 
-def collect_articles(urls):
+def collect_articles(urls, log_path, data_path):
     # Logging and data paths
-    complete_path = pathlib.Path("./data/completed.txt")
-    article_data_path = pathlib.Path("./data/article_data.csv")
     # Check for logging path
-    if complete_path.exists():
-        with open(complete_path, "r") as f:
+    if log_path.exists():
+        with open(log_path, "r") as f:
             completed_urls = f.readlines()
         completed_urls = [i.replace("\n") for i in completed_urls]
         urls = list(set(urls) - set(completed_urls))
+    print(f"URLs to go: {len(urls)}")
     # For each url
     for u in tqdm(urls):
         # Scrape article
@@ -69,21 +69,21 @@ def collect_articles(urls):
         if contents:
             # Append or write data
             contents = pd.DataFrame(contents)
-            if article_data_path.exists():
+            if data_path.exists():
                 mode = "a"
                 header = False
             else:
                 mode = "w"
                 header = True
             # Append or write log
-            if complete_path.exists():
+            if log_path.exists():
                 mode = 'a'
             else:
                 mode = 'w'
 
-            contents.to_csv(article_data_path, mode=mode, header=header, index=False)
+            contents.to_csv(data_path, mode=mode, header=header, index=False)
 
-            with open(complete_path, mode) as f:
+            with open(log_path, mode) as f:
                 f.write(f"{u}\n")
         else:
             continue
