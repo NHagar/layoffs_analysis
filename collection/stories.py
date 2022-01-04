@@ -52,16 +52,22 @@ def scrape_article(url: str):
     return result
 
 def collect_articles(urls):
+    # Logging and data paths
     complete_path = pathlib.Path("./data/completed.txt")
     article_data_path = pathlib.Path("./data/article_data.csv")
+    # Check for logging path
     if complete_path.exists():
         with open(complete_path, "r") as f:
             completed_urls = f.readlines()
         completed_urls = [i.replace("\n") for i in completed_urls]
         urls = list(set(urls) - set(completed_urls))
+    # For each url
     for u in tqdm(urls):
+        # Scrape article
         contents = scrape_article(u)
+        # If data returned
         if contents:
+            # Append or write data
             contents = pd.DataFrame(contents)
             if article_data_path.exists():
                 mode = "a"
@@ -69,7 +75,7 @@ def collect_articles(urls):
             else:
                 mode = "w"
                 header = True
-
+            # Append or write log
             if complete_path.exists():
                 mode = 'a'
             else:
@@ -79,7 +85,5 @@ def collect_articles(urls):
 
             with open(complete_path, mode) as f:
                 f.write(f"{u}\n")
-
         else:
             continue
-    
