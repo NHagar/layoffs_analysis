@@ -23,7 +23,10 @@ def scrape_article(url: str):
     soup = BeautifulSoup(r.text)
     # Check for non-news stories
     if "buzzfeed.com" in url:
-        tag = soup.find("a", {"class": "metadata-link"}).contents[0]
+        try:
+            tag = soup.find("a", {"class": "metadata-link"}).contents[0]
+        except AttributeError:
+            return None
         if tag != "News":
             return None
         authors = soup.find_all("span", {"class": re.compile(".*bylineName.*")})
@@ -35,7 +38,10 @@ def scrape_article(url: str):
         text = [i.text for i in text]
     else:
         # Collect metadata from BuzzFeed News
-        tag = soup.find("a", {"data-vars-unit-type": "buzz_head"}).contents[0]
+        try:
+            tag = soup.find("a", {"data-vars-unit-type": "buzz_head"}).contents[0]
+        except AttributeError:
+            tag = ""
         authors = [i.contents[0] for i in soup.find_all("span", {"class": re.compile("news-byline-full__name*")})]
         pub_dt = soup.find("p", {"class": "news-article-header__timestamps-posted"}).contents[0]
         hed = soup.find("h1").contents[0]
@@ -57,8 +63,7 @@ def collect_articles(urls, log_path, data_path):
     # Check for logging path
     if log_path.exists():
         with open(log_path, "r") as f:
-            completed_urls = f.readlines()
-        completed_urls = [i.replace("\n") for i in completed_urls]
+            completed_urls = f.read().splitlines()
         urls = list(set(urls) - set(completed_urls))
     print(f"URLs to go: {len(urls)}")
     # For each url
@@ -68,22 +73,20 @@ def collect_articles(urls, log_path, data_path):
         # If data returned
         if contents:
             # Append or write data
-            contents = pd.DataFrame(contents)
+            contents = pd.DataFrame([contents])
             if data_path.exists():
                 mode = "a"
                 header = False
             else:
                 mode = "w"
                 header = True
-            # Append or write log
-            if log_path.exists():
-                mode = 'a'
-            else:
-                mode = 'w'
 
             contents.to_csv(data_path, mode=mode, header=header, index=False)
 
-            with open(log_path, mode) as f:
-                f.write(f"{u}\n")
+        # Append or write log
+        if log_path.exists():
+            mode = 'a'
         else:
-            continue
+            mode = 'w'
+        with open(log_path, mode) as f:
+            f.write(f"{u}\n")
