@@ -16,8 +16,8 @@ dates = pd.date_range(start_date, end_date)
 urls.collect_urls(dates, "./data/archive_urls_raw.txt")
 
 # %%
-with open(url_path, "r") as f:
-    urls = f.read().splitlines()
+links = stories.load_and_filter_urls(url_path)
+
 # %%
-stories.collect_articles(urls, complete_path, article_data_path)
+stories.collect_articles(links, complete_path, article_data_path)
 # %%

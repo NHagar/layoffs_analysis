@@ -1,5 +1,6 @@
 import pathlib
 import re
+from time import sleep
 from typing import List
 
 from bs4 import BeautifulSoup
@@ -32,7 +33,10 @@ def scrape_article(url: str):
         authors = soup.find_all("span", {"class": re.compile(".*bylineName.*")})
         authors = [i.contents[0] for i in authors]
         pub_dt = soup.find("time")['datetime']
-        hed = soup.find("h1").contents[0]
+        try:
+            hed = soup.find("h1").contents[0]
+        except IndexError:
+            hed = ""
         art = soup.find("article")
         text = art.find_all(["p", "h2"])
         text = [i.text for i in text]
@@ -43,10 +47,16 @@ def scrape_article(url: str):
         except AttributeError:
             tag = ""
         authors = [i.contents[0] for i in soup.find_all("span", {"class": re.compile("news-byline-full__name*")})]
-        pub_dt = soup.find("p", {"class": "news-article-header__timestamps-posted"}).contents[0]
+        try:
+            pub_dt = soup.find("p", {"class": "news-article-header__timestamps-posted"}).contents[0]
+        except AttributeError:
+            pub_dt = ""
         hed = soup.find("h1").contents[0]
         art = soup.find("div", {"class": "js-article-wrapper"})
-        text = [i.text for i in art.find_all(["p", "h2"])]
+        try:
+            text = [i.text for i in art.find_all(["p", "h2"])]
+        except AttributeError:
+            text = ""
 
     result = {
         "tag": tag,
@@ -90,3 +100,4 @@ def collect_articles(urls, log_path, data_path):
             mode = 'w'
         with open(log_path, mode) as f:
             f.write(f"{u}\n")
+        sleep(1)
