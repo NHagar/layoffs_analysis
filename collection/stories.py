@@ -20,7 +20,10 @@ def load_and_filter_urls(path: str) -> List[str]:
     return urls
 
 def scrape_article(url: str):
-    r = requests.get(url)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+    }
+    r = requests.get(url, headers=headers)
     soup = BeautifulSoup(r.text)
     # Check for non-news stories
     if "buzzfeed.com" in url:
