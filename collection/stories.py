@@ -62,6 +62,7 @@ def scrape_article(url: str):
             text = ""
 
     result = {
+        "url": url,
         "tag": tag,
         "authors": authors,
         "pub_date": pub_dt,
