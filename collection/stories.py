@@ -1,10 +1,8 @@
-import pathlib
 import re
 from time import sleep
 from typing import List
 
 from bs4 import BeautifulSoup
-from numpy import log
 import pandas as pd
 import requests
 from tqdm import tqdm
