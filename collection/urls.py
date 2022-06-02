@@ -1,5 +1,4 @@
 import pathlib
-from time import sleep
 
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -17,34 +16,27 @@ def daterange(date: str, padding: int) -> pd.DatetimeIndex:
 
 def collect_urls(dates, path: str) -> None:
     """Collects unfiltered story URLs and saves them to disc"""
-    base = 'https://www.buzzfeed.com/archive'
-
+    base = "https://www.buzzfeednews.com/sitemap/news/"
     path = pathlib.Path(path)
-    log_path = pathlib.Path("./data/url_log.txt")
-    if log_path.exists():
-        with open(log_path, "r") as f:
-            start_date = f.read()
-        start_date = pd.to_datetime(start_date)
-        dates = pd.date_range(start_date, dates[-1])
 
-    for d in tqdm(dates):
-        with open(log_path, "w") as f:
-            f.write(str(d))
-        url = f'{base}/{d.year}/{d.month}/{d.day}'
+    years = set([i.year for i in dates])
+
+    for y in tqdm(years):
+        it = 1
+        url = f"{base}{y}_{it}.xml"
         r = requests.get(url)
         soup = BeautifulSoup(r.text)
-        links = soup.find_all("a", {"class": 'js-card__link link-gray'})
-        hrefs = [i['href'] for i in links]
-        if len(hrefs)==0:
-            break
-        if path.exists():
-            mode = 'a'
-        else:
-            mode = 'w'
+        urls = [i.text for i in soup.find_all("loc")]
+        with open(path / f"{y}_{it}.txt", "w") as f:
+            for u in urls:
+                f.write(f"{u}\n")
 
-        with open(path, mode) as f:
-            for i in hrefs:
-                f.write(f"{i}\n")
-        
-        sleep(1)
-        
+        while len(urls) > 0:
+            it += 1
+            url = f"{base}{y}_{it}.xml"
+            r = requests.get(url)
+            soup = BeautifulSoup(r.text)
+            urls = [i.text for i in soup.find_all("loc")]
+            with open(path / f"{y}_{it}.txt", "w") as f:
+                for u in urls:
+                    f.write(f"{u}\n")
