@@ -8,14 +8,17 @@ import requests
 from tqdm import tqdm
 
 def load_and_filter_urls(path: str) -> List[str]:
-    with open(path, "r") as f:
-        urls = f.readlines()
-    urls = [i.replace("\n", "") for i in urls]
+    url_paths = [i for i in path.glob("*.txt")]
+    all_urls = []
+    for p in url_paths:
+        with open(p, "r") as f:
+            urls = f.readlines()
+        urls = [i.replace("\n", "") for i in urls]
+        all_urls.extend(urls)
 
-    urls = list(set(urls))
-    urls = [i for i in urls if "www.buzzfeed" in i and ".com/mx" not in i and ".com/jp" not in i]
+    all_urls = list(set(all_urls))
 
-    return urls
+    return all_urls
 
 def scrape_article(url: str):
     headers = {
@@ -23,41 +26,22 @@ def scrape_article(url: str):
     }
     r = requests.get(url, headers=headers)
     soup = BeautifulSoup(r.text)
-    # Check for non-news stories
-    if "buzzfeed.com" in url:
-        try:
-            tag = soup.find("a", {"class": "metadata-link"}).contents[0]
-        except AttributeError:
-            return None
-        if tag != "News":
-            return None
-        authors = soup.find_all("span", {"class": re.compile(".*bylineName.*")})
-        authors = [i.contents[0] for i in authors]
-        pub_dt = soup.find("time")['datetime']
-        try:
-            hed = soup.find("h1").contents[0]
-        except IndexError:
-            hed = ""
-        art = soup.find("article")
-        text = art.find_all(["p", "h2"])
-        text = [i.text for i in text]
-    else:
-        # Collect metadata from BuzzFeed News
-        try:
-            tag = soup.find("a", {"data-vars-unit-type": "buzz_head"}).contents[0]
-        except AttributeError:
-            tag = ""
-        authors = [i.contents[0] for i in soup.find_all("span", {"class": re.compile("news-byline-full__name*")})]
-        try:
-            pub_dt = soup.find("p", {"class": "news-article-header__timestamps-posted"}).contents[0]
-        except AttributeError:
-            pub_dt = ""
-        hed = soup.find("h1").contents[0]
-        art = soup.find("div", {"class": "js-article-wrapper"})
-        try:
-            text = [i.text for i in art.find_all(["p", "h2"])]
-        except AttributeError:
-            text = ""
+    # Collect metadata from BuzzFeed News
+    try:
+        tag = soup.find("a", {"data-vars-unit-type": "buzz_head"}).contents[0]
+    except AttributeError:
+        tag = ""
+    authors = [i.contents[0] for i in soup.find_all("span", {"class": re.compile("news-byline-full__name*")})]
+    try:
+        pub_dt = soup.find("p", {"class": "news-article-header__timestamps-posted"}).contents[0]
+    except AttributeError:
+        pub_dt = ""
+    hed = soup.find("h1").contents[0]
+    art = soup.find("div", {"class": "js-article-wrapper"})
+    try:
+        text = [i.text for i in art.find_all(["p", "h2"])]
+    except AttributeError:
+        text = ""
 
     result = {
         "url": url,
