@@ -27,7 +27,7 @@ def scrape_article(url: str):
     # Collect metadata from BuzzFeed News
     try:
         section = soup.find("meta", {"property": "article:section"})["content"]
-    except AttributeError:
+    except (AttributeError, TypeError) as e:
         section = ""
     try:
         tags = [i['content'] for i in soup.find_all("meta", {"property": "article:tag"})]
@@ -36,7 +36,7 @@ def scrape_article(url: str):
     authors = [i['content'] for i in soup.find_all("meta", {"property": "author"})]
     try:
         pub_dt = [i['datetime'] for i in soup.find_all("time") if "Posted" in i.text][0]
-    except AttributeError:
+    except (AttributeError, IndexError) as e:
         pub_dt = ""
     hed = soup.find("h1").contents[0]
     art = soup.find("article")

@@ -21,7 +21,7 @@ def collect_urls(dates, path: str) -> None:
 
     base = "https://www.buzzfeednews.com/sitemap/news/"
     path = pathlib.Path(path)
-
+    # TODO: Refine this to also use week numbers
     years = set([i.year for i in dates])
 
     for y in tqdm(years):
