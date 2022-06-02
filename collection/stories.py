@@ -1,6 +1,3 @@
-from inspect import Attribute
-import re
-from time import sleep
 from typing import List
 
 from bs4 import BeautifulSoup
@@ -98,4 +95,3 @@ def collect_articles(urls, log_path, data_path):
             mode = 'w'
         with open(log_path, mode) as f:
             f.write(f"{u}\n")
-        sleep(1)
