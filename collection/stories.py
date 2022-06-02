@@ -1,3 +1,4 @@
+from inspect import Attribute
 import re
 from time import sleep
 from typing import List
@@ -28,24 +29,35 @@ def scrape_article(url: str):
     soup = BeautifulSoup(r.text)
     # Collect metadata from BuzzFeed News
     try:
-        tag = soup.find("a", {"data-vars-unit-type": "buzz_head"}).contents[0]
+        section = soup.find("meta", {"property": "article:section"})["content"]
     except AttributeError:
-        tag = ""
-    authors = [i.contents[0] for i in soup.find_all("span", {"class": re.compile("news-byline-full__name*")})]
+        section = ""
     try:
-        pub_dt = soup.find("p", {"class": "news-article-header__timestamps-posted"}).contents[0]
+        tags = [i['content'] for i in soup.find_all("meta", {"property": "article:tag"})]
+    except AttributeError:
+        tags = ""
+    authors = [i['content'] for i in soup.find_all("meta", {"property": "author"})]
+    try:
+        pub_dt = [i['datetime'] for i in soup.find_all("time") if "Posted" in i.text][0]
     except AttributeError:
         pub_dt = ""
     hed = soup.find("h1").contents[0]
-    art = soup.find("div", {"class": "js-article-wrapper"})
+    art = soup.find("article")
     try:
-        text = [i.text for i in art.find_all(["p", "h2"])]
+        text = []
+        for i in art.find_all(["p", "h2"]):
+            if i.has_attr("class"):
+                if "bfp-related-links" in "".join(i["class"]) or "newsfooter" in "".join(i["class"]):
+                    continue
+            text.append(i.text)
+        text = " ".join(text)
     except AttributeError:
         text = ""
 
     result = {
         "url": url,
-        "tag": tag,
+        "section": section,
+        "tags": tags,
         "authors": authors,
         "pub_date": pub_dt,
         "hed": hed,
