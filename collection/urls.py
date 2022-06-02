@@ -16,6 +16,9 @@ def daterange(date: str, padding: int) -> pd.DatetimeIndex:
 
 def collect_urls(dates, path: str) -> None:
     """Collects unfiltered story URLs and saves them to disc"""
+    if not path.exists():
+        path.mkdir()
+
     base = "https://www.buzzfeednews.com/sitemap/news/"
     path = pathlib.Path(path)
 
