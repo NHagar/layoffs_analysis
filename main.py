@@ -33,6 +33,16 @@ df.authors = df.authors.apply(ast.literal_eval)
 # Data filters
 # Date range
 df = df[(df.pub_date>=start_date) & (df.pub_date<=end_date)]
-
+df['is_post'] = df.pub_date >= pd.to_datetime('2019-01-25').date()
+# %%
+# Section composition
+df.groupby(['is_post', "section"]).count()
 
 # %%
+# Analyses to reproduce
+# RDD - story count and byline count
+
+# Semantic analysis
+    # Embedding generation
+    # Overall clustering, comparison to section breakdown
+    # Per-section density
