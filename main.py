@@ -1,4 +1,5 @@
 # %%
+import ast
 import pathlib
 
 import pandas as pd
@@ -20,4 +21,18 @@ links = stories.load_and_filter_urls(url_path)
 
 # %%
 stories.collect_articles(links, complete_path, article_data_path)
+
+# %%
+# Data loading and cleaning
+df = pd.read_csv("./data/article_data.csv")
+df.pub_date = pd.to_datetime(df.pub_date).dt.date
+df.tags = df.tags.apply(ast.literal_eval)
+df.authors = df.authors.apply(ast.literal_eval)
+
+# %%
+# Data filters
+# Date range
+df = df[(df.pub_date>=start_date) & (df.pub_date<=end_date)]
+
+
 # %%
